@@ -3,7 +3,6 @@ module Bio.Phylo where
 
 import qualified Bio.Phylo.BaseTree as BaseTree
 import qualified Bio.Phylo.IO.Newick as Newick
-import Data.Char
 
 
 parse :: String -> (String -> BaseTree.Tree)

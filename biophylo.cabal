@@ -13,9 +13,9 @@ Build-Type:         Simple
 
 Library
   Build-depends:    base >= 2 && < 5, 
-                    regex-pcre,
-                    MissingH
-  --, biocore, bytestring
+                    biocore,
+                    MissingH,
+                    regex-pcre
   Exposed-modules:  Bio.Phylo
 
 source-Repository   master
