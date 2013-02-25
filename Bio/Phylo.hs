@@ -8,9 +8,13 @@ import Data.Char
 
 parse :: String -> (String -> BaseTree.Tree)
 parse "newick" = Newick.parse
+parse_file :: String -> (String -> IO BaseTree.Tree)
+parse_file "newick" = Newick.parse_file
 
 write :: String -> (BaseTree.Tree -> String)
 write "newick" = Newick.write
+write_file :: String -> (BaseTree.Tree -> String -> IO ())
+write_file "newick" = Newick.write_file
 
 
 -- default Show instance for tree and clade

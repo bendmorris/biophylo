@@ -57,6 +57,11 @@ parse string = if length result == 1
                then BaseTree.RootedTree $ result !! 0
                else BaseTree.RootedTree $ (fst $ make_clade [] "" 1 "" result) !! 0
                where result = process_tokens $ tokenize string
+parse_file :: String -> IO BaseTree.Tree
+parse_file filename =
+    do file_contents <- readFile filename
+       return $ parse file_contents
+
                         
 tokenize :: String -> [Token]
 tokenize string = [
@@ -103,9 +108,10 @@ make_clade [] name branch_length comment children =
 -- Writer
 
 write :: BaseTree.Tree -> String
-write tree = case tree of
-               BaseTree.EmptyTree -> "();"
-               BaseTree.RootedTree clade -> write_clade clade ++ ";"
+write (BaseTree.RootedTree root) = write_clade root ++ ";"
+write_file :: BaseTree.Tree -> String -> IO ()
+write_file tree filename = writeFile filename $ write tree
+
 write_clade :: BaseTree.Clade -> String
 write_clade clade = (if BaseTree.children clade == [] then "" 
                      else ("(" ++ (join "," [write_clade child | child <- BaseTree.children clade]) ++ ")")) ++
