@@ -1,0 +1,23 @@
+Name:               biophylo
+Version:            0.0.1
+Synopsis:           Phylogenetic computing library for Haskell
+Description:        Phylogenetic computing library for Haskell
+Homepage:	        https://github.com/bendmorris/biophylo
+License:            MIT
+License-file:       LICENSE
+Cabal-Version:      >=1.6
+Author:             Ben Morris <ben@bendmorris.com>
+Maintainer:         ben@bendmorris.com
+Category:	        Bioinformatics
+Build-Type:         Simple
+
+Library
+  Build-depends:    base >= 2 && < 5, 
+                    regex-pcre,
+                    MissingH
+  --, biocore, bytestring
+  Exposed-modules:  Bio.Phylo
+
+source-Repository   master
+  type:		        git
+  location:	        https://github.com/bendmorris/biophylo.git
