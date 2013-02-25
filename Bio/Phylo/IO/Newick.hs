@@ -3,7 +3,7 @@ biophylo IO module providing support for the Newick tree format.
 -}
 module Bio.Phylo.IO.Newick where
 
-import qualified Bio.Phylo.BaseTree as BaseTree
+import qualified Bio.Phylo.Tree as Tree
 import Text.Regex.PCRE
 import Data.List.Utils
 
@@ -52,12 +52,12 @@ newick_regex = join "|" ["(" ++ regex ++ ")" | regex <- token_regex]
 
 -- Parser
 
-parse :: String -> BaseTree.Tree
+parse :: String -> Tree.Tree
 parse string = if length result == 1 
-               then BaseTree.RootedTree $ result !! 0
-               else BaseTree.RootedTree $ (fst $ make_clade [] "" 1 "" result) !! 0
+               then Tree.RootedTree $ result !! 0
+               else Tree.RootedTree $ (fst $ make_clade [] "" 1 "" result) !! 0
                where result = process_tokens $ tokenize string
-parse_file :: String -> IO BaseTree.Tree
+parse_file :: String -> IO Tree.Tree
 parse_file filename =
     do file_contents <- readFile filename
        return $ parse file_contents
@@ -74,12 +74,12 @@ tokenize string = [
                    ]
                    
 -- process tokens into a list of clades
-process_tokens :: [Token] -> [BaseTree.Clade]
+process_tokens :: [Token] -> [Tree.Clade]
 process_tokens [] = []
 process_tokens tokens = fst (new_clade tokens)
 new_clade tokens = make_clade tokens "" 1 "" []
 trim string = [string !! n | n <- [1 .. (length(string) - 2)]]
-make_clade :: [Token] -> String -> Float -> String -> [BaseTree.Clade] -> ([BaseTree.Clade], [Token])
+make_clade :: [Token] -> String -> Float -> String -> [Tree.Clade] -> ([Tree.Clade], [Token])
 make_clade (h:t) name branch_length comment children = 
     case snd h of
       OpenParens -> make_clade (snd result) name branch_length comment (fst result)
@@ -96,33 +96,33 @@ make_clade (h:t) name branch_length comment children =
       Newline -> make_clade t name branch_length comment children
       Error -> ([], [])
 make_clade [] name branch_length comment children = 
-    ([BaseTree.Node { 
-        BaseTree.name = name,
-        BaseTree.branch_length = branch_length,
-        BaseTree.comment = comment,
-        BaseTree.children = children }],
+    ([Tree.Node { 
+        Tree.name = name,
+        Tree.branch_length = branch_length,
+        Tree.comment = comment,
+        Tree.children = children }],
      [])
      
      
 
 -- Writer
 
-write :: BaseTree.Tree -> String
-write (BaseTree.RootedTree root) = write_clade root ++ ";"
-write_file :: BaseTree.Tree -> String -> IO ()
+write :: Tree.Tree -> String
+write (Tree.RootedTree root) = write_clade root ++ ";"
+write_file :: Tree.Tree -> String -> IO ()
 write_file tree filename = writeFile filename $ write tree
 
-write_clade :: BaseTree.Clade -> String
-write_clade clade = (if BaseTree.children clade == [] then "" 
-                     else ("(" ++ (join "," [write_clade child | child <- BaseTree.children clade]) ++ ")")) ++
-                    (case BaseTree.name clade of
+write_clade :: Tree.Clade -> String
+write_clade clade = (if Tree.children clade == [] then "" 
+                     else ("(" ++ (join "," [write_clade child | child <- Tree.children clade]) ++ ")")) ++
+                    (case Tree.name clade of
                        "" -> ""
                        label -> case match of
                                   ("", _, "") -> label
                                   otherwise -> "'" ++ label ++ "'"
                                 where match = label =~ (token_regex !! 2) :: (String, String, String)
                     ) ++
-                    (if BaseTree.branch_length clade == 1.0
+                    (if Tree.branch_length clade == 1.0
                      then ""
-                     else ":" ++ (show $ BaseTree.branch_length clade)) ++
-                    (if BaseTree.comment clade == "" then "" else "[" ++ BaseTree.comment clade ++ "]")
+                     else ":" ++ (show $ Tree.branch_length clade)) ++
+                    (if Tree.comment clade == "" then "" else "[" ++ Tree.comment clade ++ "]")
