@@ -10,7 +10,7 @@ parse "newick" = Newick.parse
 parse_file :: String -> (String -> IO Tree.Tree)
 parse_file "newick" = Newick.parse_file
 
-write :: String -> (Tree.Tree -> String)
+write :: String -> (Tree.Tree -> B.ByteString)
 write "newick" = Newick.write
 write_file :: String -> (String -> Tree.Tree -> IO ())
 write_file "newick" = Newick.write_file
@@ -23,9 +23,9 @@ convert from_file from_format to_file to_format =
 
 -- default Show instance for tree and clade
 instance Show(Tree.Tree) where
-    show tree = Newick.write tree
+    show tree = B.unpack $ Newick.write tree
 instance Show(Tree.Clade) where
-    show clade = Newick.write_clade clade
+    show clade = B.unpack $ Newick.write_clade clade
     
     
 -- get a list of terminal nodes from a tree
@@ -37,9 +37,9 @@ clade_terminals clade = case Tree.children clade of
                           otherwise -> [child | direct_child <- otherwise, 
                                                 child <- clade_terminals (direct_child)]
 -- find all nodes with a given label
-find_nodes :: Tree.Tree -> String -> [Tree.Clade]
+find_nodes :: Tree.Tree -> B.ByteString -> [Tree.Clade]
 find_nodes (Tree.RootedTree root) string = clade_find_nodes root string
-clade_find_nodes :: Tree.Clade -> String -> [Tree.Clade]
+clade_find_nodes :: Tree.Clade -> B.ByteString -> [Tree.Clade]
 clade_find_nodes clade string = if Tree.name clade == string
                                 then clade : result
                                 else result

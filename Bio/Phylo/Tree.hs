@@ -1,12 +1,14 @@
 module Bio.Phylo.Tree where
 
+import qualified Data.ByteString.Lazy as B
+
 
 data Tree = RootedTree Clade
     deriving (Eq)
 data Clade = Node {
-                   name :: String,
+                   name :: B.ByteString,
                    branch_length :: Float,
-                   comment :: String,
+                   comment :: B.ByteString,
                    children :: [Clade]
                    }
     deriving (Eq)

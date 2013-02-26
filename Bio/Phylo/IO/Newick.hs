@@ -96,9 +96,9 @@ make_clade (h:t) name branch_length comment children =
                                         name branch_length comment children
 make_clade [] name branch_length comment children = 
     ([Tree.Node { 
-        Tree.name = B.unpack name,
+        Tree.name = name,
         Tree.branch_length = branch_length,
-        Tree.comment = B.unpack comment,
+        Tree.comment = comment,
         Tree.children = children }],
      [])
      
@@ -106,20 +106,22 @@ make_clade [] name branch_length comment children =
 
 -- Writer
 
-write :: Tree.Tree -> String
-write (Tree.RootedTree root) = write_clade root ++ ";\n"
+write :: Tree.Tree -> B.ByteString
+write (Tree.RootedTree root) = B.concat [write_clade root, B.pack ";\n"]
 write_file :: String -> Tree.Tree -> IO ()
-write_file filename tree = writeFile filename $ write tree
+write_file filename tree = B.writeFile filename $ write tree
 
-write_clade :: Tree.Clade -> String
-write_clade clade = (if Tree.children clade == [] then "" 
-                     else ("(" ++ (join "," [write_clade child | child <- Tree.children clade]) ++ ")")) ++
-                    (case Tree.name clade of
-                       "" -> ""
-                       label -> if match then label else "'" ++ label ++ "'"
-                                where match = label =~ (B.concat [B.pack "^", (token_regex !! 2), B.pack "$"]) :: Bool
-                    ) ++
+write_clade :: Tree.Clade -> B.ByteString
+write_clade clade = B.concat [
+                    (if Tree.children clade == [] then B.empty 
+                     else B.concat [B.pack "(", (B.intercalate (B.pack ",") [write_clade child | child <- Tree.children clade]), B.pack ")"]),
+                    (if label == B.empty then B.empty
+                     else (if match then label else B.concat [B.pack "'", label, B.pack "'"])
+                    ),
                     (if Tree.branch_length clade == 1.0
-                     then ""
-                     else ":" ++ (show $ Tree.branch_length clade)) ++
-                    (if Tree.comment clade == "" then "" else "[" ++ Tree.comment clade ++ "]")
+                     then B.empty
+                     else B.concat [B.pack ":", B.pack $ show $ Tree.branch_length clade]),
+                    (if Tree.comment clade == B.empty then B.empty else B.concat [B.pack "[", Tree.comment clade, B.pack "]"])
+                    ]
+                     where label = Tree.name clade
+                           match = label =~ (B.concat [B.pack "^", (token_regex !! 2), B.pack "$"]) :: Bool

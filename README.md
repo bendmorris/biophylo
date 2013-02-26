@@ -11,7 +11,7 @@ Example usage:
        tree <- parse_file "newick" "test.newick"
 
        -- print all of the terminal nodes
-       putStrLn $ terminals tree
+       putStrLn $ show $ terminals tree
 
        -- write the tree to a new output file
-       write_file "newick" tree "output.newick"
+       write_file "newick" "output.newick" tree
