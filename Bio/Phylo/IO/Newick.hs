@@ -24,7 +24,7 @@ type Token = (String, TokenName)
     When a regex contains multiple match groups, it needs to be repeated with a 
     blank string below for matching to work correctly.
 -}
-tokens :: [(String, TokenName)]
+tokens :: [Token]
 tokens = [
           ("\\(",                               OpenParens),
           ("\\)",                               CloseParens),
@@ -102,8 +102,8 @@ make_clade [] name branch_length comment children =
 
 write :: Tree.Tree -> String
 write (Tree.RootedTree root) = write_clade root ++ ";\n"
-write_file :: Tree.Tree -> String -> IO ()
-write_file tree filename = writeFile filename $ write tree
+write_file :: String -> Tree.Tree -> IO ()
+write_file filename tree = writeFile filename $ write tree
 
 write_clade :: Tree.Clade -> String
 write_clade clade = (if Tree.children clade == [] then "" 
