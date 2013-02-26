@@ -31,9 +31,9 @@ tokens = [
           ("[^][[:space:]()':;,]+",             UnquotedNodeLabel),
           ("\\:[0-9]*\\.?[0-9]+",               EdgeLength),
           ("\\,",                               Comma),
-          ("\\[(\\\\.|[^]])*\\]",               Comment),
+          ("[[](\\\\.|[^]])*[]]",               Comment),
           ("",                                  Comment),
-          ("\\'(\\\\.|[^'])*\\'",               QuotedNodeLabel),
+          ("'(\\\\.|[^'])*'",                   QuotedNodeLabel),
           ("",                                  QuotedNodeLabel)
           ]
           
@@ -73,6 +73,8 @@ process_tokens [] = []
 process_tokens tokens = fst (new_clade tokens)
 new_clade tokens = make_clade tokens "" 1 "" []
 trim string = [string !! n | n <- [1 .. (length(string) - 2)]]
+-- make_clade takes a list of tokens generates a set of clades with the same parent,
+-- and returns those clades and the remaining unparsed tokens
 make_clade :: [Token] -> String -> Float -> String -> [Tree.Clade] -> ([Tree.Clade], [Token])
 make_clade (h:t) name branch_length comment children = 
     case snd h of
@@ -99,7 +101,7 @@ make_clade [] name branch_length comment children =
 -- Writer
 
 write :: Tree.Tree -> String
-write (Tree.RootedTree root) = write_clade root ++ ";"
+write (Tree.RootedTree root) = write_clade root ++ ";\n"
 write_file :: Tree.Tree -> String -> IO ()
 write_file tree filename = writeFile filename $ write tree
 
