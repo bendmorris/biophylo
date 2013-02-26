@@ -15,6 +15,11 @@ write "newick" = Newick.write
 write_file :: String -> (Tree.Tree -> String -> IO ())
 write_file "newick" = Newick.write_file
 
+convert :: String -> String -> String -> String -> IO ()
+convert from_file from_format to_file to_format =
+    do tree <- parse_file from_format from_file
+       write_file to_format tree to_file
+
 
 -- default Show instance for tree and clade
 instance Show(Tree.Tree) where
