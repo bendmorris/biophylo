@@ -4,7 +4,7 @@ biophylo IO module providing support for the Newick tree format.
 module Bio.Phylo.IO.Newick where
 
 import qualified Bio.Phylo.Tree as Tree
-import Text.Regex.PCRE
+import Text.Regex.TDFA
 import Data.List.Utils
 
 
@@ -15,9 +15,6 @@ data TokenName = OpenParens
                | Comma
                | Comment
                | QuotedNodeLabel
-               | Semicolon
-               | Newline
-               | Error
                deriving (Show, Eq)
 type Token = (String, TokenName)
 
@@ -31,16 +28,13 @@ tokens :: [(String, TokenName)]
 tokens = [
           ("\\(",                               OpenParens),
           ("\\)",                               CloseParens),
-          ("[^\\s\\(\\)\\[\\]\\'\\:\\;\\,]+",   UnquotedNodeLabel),
+          ("[^][[:space:]()':;,]+",             UnquotedNodeLabel),
           ("\\:[0-9]*\\.?[0-9]+",               EdgeLength),
           ("\\,",                               Comma),
-          ("\\[(\\\\.|[^\\]])*\\]",             Comment),
+          ("\\[(\\\\.|[^]])*\\]",               Comment),
           ("",                                  Comment),
-          ("\\'(\\\\.|[^\\'])*\\'",             QuotedNodeLabel),
-          ("",                                  QuotedNodeLabel),
-          ("\\;",                               Semicolon),
-          ("\\n",                               Newline),
-          (".*",                                Error)
+          ("\\'(\\\\.|[^'])*\\'",               QuotedNodeLabel),
+          ("",                                  QuotedNodeLabel)
           ]
           
 token_regex = [fst token | token <- tokens, fst token /= ""]
@@ -85,16 +79,13 @@ make_clade (h:t) name branch_length comment children =
       OpenParens -> make_clade (snd result) name branch_length comment (fst result)
                     where result = new_clade t
       CloseParens -> (fst $ make_clade [] name branch_length comment children, t)
-      UnquotedNodeLabel -> make_clade t (fst h) branch_length comment children
+      UnquotedNodeLabel -> make_clade t (name ++ fst h) branch_length comment children
       EdgeLength -> make_clade t name ((read $ tail $ fst h) :: Float) comment children
       Comma -> (fst (make_clade [] name branch_length comment children) ++ (fst result), snd result)
                where result = new_clade t
-      Comment -> make_clade t name branch_length (trim $ fst h) children
+      Comment -> make_clade t name branch_length (comment ++ (trim $ fst h)) children
       QuotedNodeLabel -> make_clade ((trim $ fst h, UnquotedNodeLabel):t) 
                                         name branch_length comment children
-      Semicolon -> make_clade [] name branch_length comment children
-      Newline -> make_clade t name branch_length comment children
-      Error -> ([], [])
 make_clade [] name branch_length comment children = 
     ([Tree.Node { 
         Tree.name = name,
@@ -117,10 +108,8 @@ write_clade clade = (if Tree.children clade == [] then ""
                      else ("(" ++ (join "," [write_clade child | child <- Tree.children clade]) ++ ")")) ++
                     (case Tree.name clade of
                        "" -> ""
-                       label -> case match of
-                                  ("", _, "") -> label
-                                  otherwise -> "'" ++ label ++ "'"
-                                where match = label =~ (token_regex !! 2) :: (String, String, String)
+                       label -> if match then label else "'" ++ label ++ "'"
+                                where match = label =~ ("^" ++ (token_regex !! 2) ++ "$") :: Bool
                     ) ++
                     (if Tree.branch_length clade == 1.0
                      then ""

@@ -1,7 +1,5 @@
 module Bio.Phylo.Tree where
 
-import Data.List.Utils
-
 
 data Tree = RootedTree Clade
     deriving (Eq)
