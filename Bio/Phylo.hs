@@ -1,11 +1,11 @@
 module Bio.Phylo where
 
-
+import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Bio.Phylo.Tree as Tree
 import qualified Bio.Phylo.IO.Newick as Newick
 
 
-parse :: String -> (String -> Tree.Tree)
+parse :: String -> (B.ByteString -> Tree.Tree)
 parse "newick" = Newick.parse
 parse_file :: String -> (String -> IO Tree.Tree)
 parse_file "newick" = Newick.parse_file

@@ -14,7 +14,7 @@ Build-Type:         Simple
 Library
   Build-depends:    base >= 2 && < 5, 
                     biocore,
-                    MissingH,
+                    bytestring,
                     regex-tdfa
   Exposed-modules:  Bio.Phylo
 
