@@ -30,7 +30,7 @@ instance Show(Tree.Clade) where
     
 -- get a list of terminal nodes from a tree
 terminals :: Tree.Tree -> [Tree.Clade]
-terminals (Tree.RootedTree root) = clade_terminals root
+terminals (Tree.Tree root) = clade_terminals root
 clade_terminals :: Tree.Clade -> [Tree.Clade]
 clade_terminals clade = case Tree.children clade of
                           [] -> [clade]
@@ -38,7 +38,7 @@ clade_terminals clade = case Tree.children clade of
                                                 child <- clade_terminals (direct_child)]
 -- find all nodes with a given label
 find_nodes :: Tree.Tree -> B.ByteString -> [Tree.Clade]
-find_nodes (Tree.RootedTree root) string = clade_find_nodes root string
+find_nodes (Tree.Tree root) string = clade_find_nodes root string
 clade_find_nodes :: Tree.Clade -> B.ByteString -> [Tree.Clade]
 clade_find_nodes clade string = if Tree.name clade == string
                                 then clade : result
@@ -50,14 +50,14 @@ clade_find_nodes clade string = if Tree.name clade == string
 get_path :: Tree -> Clade -> [Clade]
 get_path tree clade = TODO
 get_path_to_root :: Tree -> Clade -> [Clade]
-get_path_to_root (RootedTree root) clade = TODO
+get_path_to_root (Tree root) clade = TODO
 
 -- get the MRCA for a set of clades
 mrca :: Tree -> [Clade] -> Clade
-mrca (RootedTree root) [] = root
+mrca (Tree root) [] = root
 mrca tree h:[] = h
 mrca tree h:t = mrca_2 tree h (mrca tree t:tail(t))
-mrca_2 (RootedTree root) clade1 clade2 = 
+mrca_2 (Tree root) clade1 clade2 = 
     [ancestor | ancestor <- ancestors1, contains [ancestor] ancestors2] !! 0
     where ancestors1 = get_path_to_root clade1
           ancestors2 = get_path_to_root clade2

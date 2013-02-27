@@ -54,8 +54,8 @@ newick_regex = B.intercalate (B.pack "|") [B.concat [B.pack "(", regex, B.pack "
 
 parse :: B.ByteString -> Tree.Tree
 parse string = if length result == 1 
-               then Tree.RootedTree $ result !! 0
-               else Tree.RootedTree $ (fst $ make_clade [] B.empty 1 B.empty result) !! 0
+               then Tree.Tree $ result !! 0
+               else Tree.Tree $ (fst $ make_clade [] B.empty 1 B.empty result) !! 0
                where result = process_tokens $ tokenize string
 parse_file :: String -> IO Tree.Tree
 parse_file filename =
@@ -95,7 +95,7 @@ make_clade (h:t) name branch_length comment children =
       QuotedNodeLabel -> make_clade ((trim $ fst h, UnquotedNodeLabel):t) 
                                         name branch_length comment children
 make_clade [] name branch_length comment children = 
-    ([Tree.Node { 
+    ([Tree.Clade { 
         Tree.name = name,
         Tree.branch_length = branch_length,
         Tree.comment = comment,
@@ -107,7 +107,7 @@ make_clade [] name branch_length comment children =
 -- Writer
 
 write :: Tree.Tree -> B.ByteString
-write (Tree.RootedTree root) = B.concat [write_clade root, B.pack ";\n"]
+write (Tree.Tree root) = B.concat [write_clade root, B.pack ";\n"]
 write_file :: String -> Tree.Tree -> IO ()
 write_file filename tree = B.writeFile filename $ write tree
 
