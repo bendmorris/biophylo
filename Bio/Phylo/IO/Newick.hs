@@ -57,11 +57,6 @@ parse string = if length result == 1
                then Tree.Tree $ result !! 0
                else Tree.Tree $ (fst $ make_clade [] B.empty 1 B.empty result) !! 0
                where result = process_tokens $ tokenize string
-parse_file :: String -> IO Tree.Tree
-parse_file filename =
-    do file_contents <- B.readFile filename
-       return $ parse $ file_contents
-
                         
 tokenize :: B.ByteString -> [Token]
 tokenize string = [
@@ -108,8 +103,6 @@ make_clade [] name branch_length comment children =
 
 write :: Tree.Tree -> B.ByteString
 write (Tree.Tree root) = B.concat [write_clade root, B.pack ";\n"]
-write_file :: String -> Tree.Tree -> IO ()
-write_file filename tree = B.writeFile filename $ write tree
 
 write_clade :: Tree.Clade -> B.ByteString
 write_clade clade = B.concat [

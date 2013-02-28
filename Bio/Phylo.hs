@@ -3,17 +3,25 @@ module Bio.Phylo where
 import qualified Data.ByteString.Lazy.Char8 as B
 import qualified Bio.Phylo.Tree as Tree
 import qualified Bio.Phylo.IO.Newick as Newick
+--import qualified Bio.Phylo.IO.Nexus as Nexus
 
 
 parse :: String -> (B.ByteString -> Tree.Tree)
 parse "newick" = Newick.parse
-parse_file :: String -> (String -> IO Tree.Tree)
-parse_file "newick" = Newick.parse_file
+--parse "nexus" = Nexus.parse
 
 write :: String -> (Tree.Tree -> B.ByteString)
 write "newick" = Newick.write
-write_file :: String -> (String -> Tree.Tree -> IO ())
-write_file "newick" = Newick.write_file
+--write "nexus" = Nexus.write
+
+parse_file :: String -> String -> IO Tree.Tree
+parse_file format filename =
+    do file_contents <- B.readFile filename
+       return $ parse format $ file_contents
+
+write_file :: String -> String -> Tree.Tree -> IO ()
+write_file format filename tree = 
+    B.writeFile filename $ write format $ tree
 
 convert :: String -> String -> String -> String -> IO ()
 convert from_file from_format to_file to_format =
