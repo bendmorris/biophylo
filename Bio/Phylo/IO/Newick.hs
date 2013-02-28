@@ -3,7 +3,7 @@ biophylo IO module providing support for the Newick tree format.
 -}
 module Bio.Phylo.IO.Newick where
 
-import qualified Bio.Phylo.Tree as Tree
+import Bio.Phylo.Tree
 import Text.Regex.TDFA
 import Text.Regex.TDFA.ByteString.Lazy
 import Data.List
@@ -52,10 +52,10 @@ newick_regex = B.intercalate (B.pack "|") [B.concat [B.pack "(", regex, B.pack "
 
 -- Parser
 
-parse :: B.ByteString -> Tree.Tree
+parse :: B.ByteString -> Tree
 parse string = if length result == 1 
-               then Tree.Tree $ result !! 0
-               else Tree.Tree $ (fst $ make_clade [] B.empty 1 B.empty result) !! 0
+               then Tree $ result !! 0
+               else Tree $ (fst $ make_clade [] B.empty 1 B.empty result) !! 0
                where result = process_tokens $ tokenize string
                         
 tokenize :: B.ByteString -> [Token]
@@ -69,14 +69,14 @@ tokenize string = [
                    ]
                    
 -- process tokens into a list of clades
-process_tokens :: [Token] -> [Tree.Clade]
+process_tokens :: [Token] -> [Clade]
 process_tokens [] = []
 process_tokens tokens = fst (new_clade tokens)
 new_clade tokens = make_clade tokens B.empty 1 B.empty []
 trim string = B.take ((B.length string) - 2) $ B.drop 1 string
 -- make_clade takes a list of tokens generates a set of clades with the same parent,
 -- and returns those clades and the remaining unparsed tokens
-make_clade :: [Token] -> B.ByteString -> Float -> B.ByteString -> [Tree.Clade] -> ([Tree.Clade], [Token])
+make_clade :: [Token] -> B.ByteString -> Float -> B.ByteString -> [Clade] -> ([Clade], [Token])
 make_clade (h:t) name branch_length comment children = 
     case snd h of
       OpenParens -> make_clade (snd result) name branch_length comment (fst result)
@@ -90,31 +90,31 @@ make_clade (h:t) name branch_length comment children =
       QuotedNodeLabel -> make_clade ((trim $ fst h, UnquotedNodeLabel):t) 
                                         name branch_length comment children
 make_clade [] name branch_length comment children = 
-    ([Tree.Clade { 
-        Tree.name = name,
-        Tree.branch_length = branch_length,
-        Tree.comment = comment,
-        Tree.children = children }],
+    ([Clade { 
+        name = name,
+        branch_length = branch_length,
+        comment = comment,
+        children = children }],
      [])
      
      
 
 -- Writer
 
-write :: Tree.Tree -> B.ByteString
-write (Tree.Tree root) = B.concat [write_clade root, B.pack ";\n"]
+write :: Tree -> B.ByteString
+write (Tree root) = B.concat [write_clade root, B.pack ";\n"]
 
-write_clade :: Tree.Clade -> B.ByteString
+write_clade :: Clade -> B.ByteString
 write_clade clade = B.concat [
-                    (if Tree.children clade == [] then B.empty 
-                     else B.concat [B.pack "(", (B.intercalate (B.pack ",") [write_clade child | child <- Tree.children clade]), B.pack ")"]),
+                    (if children clade == [] then B.empty 
+                     else B.concat [B.pack "(", (B.intercalate (B.pack ",") [write_clade child | child <- children clade]), B.pack ")"]),
                     (if label == B.empty then B.empty
                      else (if match then label else B.concat [B.pack "'", label, B.pack "'"])
                     ),
-                    (if Tree.branch_length clade == 1.0
+                    (if branch_length clade == 1.0
                      then B.empty
-                     else B.concat [B.pack ":", B.pack $ show $ Tree.branch_length clade]),
-                    (if Tree.comment clade == B.empty then B.empty else B.concat [B.pack "[", Tree.comment clade, B.pack "]"])
+                     else B.concat [B.pack ":", B.pack $ show $ branch_length clade]),
+                    (if comment clade == B.empty then B.empty else B.concat [B.pack "[", comment clade, B.pack "]"])
                     ]
-                     where label = Tree.name clade
+                     where label = name clade
                            match = label =~ (B.concat [B.pack "^", (token_regex !! 2), B.pack "$"]) :: Bool

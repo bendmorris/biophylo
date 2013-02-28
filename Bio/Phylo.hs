@@ -1,25 +1,25 @@
 module Bio.Phylo where
 
 import qualified Data.ByteString.Lazy.Char8 as B
-import qualified Bio.Phylo.Tree as Tree
+import Bio.Phylo.Tree
 import qualified Bio.Phylo.IO.Newick as Newick
 --import qualified Bio.Phylo.IO.Nexus as Nexus
 
 
-parse :: String -> (B.ByteString -> Tree.Tree)
+parse :: String -> (B.ByteString -> Tree)
 parse "newick" = Newick.parse
 --parse "nexus" = Nexus.parse
 
-write :: String -> (Tree.Tree -> B.ByteString)
+write :: String -> (Tree -> B.ByteString)
 write "newick" = Newick.write
 --write "nexus" = Nexus.write
 
-parse_file :: String -> String -> IO Tree.Tree
+parse_file :: String -> String -> IO Tree
 parse_file format filename =
     do file_contents <- B.readFile filename
        return $ parse format $ file_contents
 
-write_file :: String -> String -> Tree.Tree -> IO ()
+write_file :: String -> String -> Tree -> IO ()
 write_file format filename tree = 
     B.writeFile filename $ write format $ tree
 
@@ -30,28 +30,28 @@ convert from_file from_format to_file to_format =
 
 
 -- default Show instance for tree and clade
-instance Show(Tree.Tree) where
+instance Show(Tree) where
     show tree = B.unpack $ Newick.write tree
-instance Show(Tree.Clade) where
+instance Show(Clade) where
     show clade = B.unpack $ Newick.write_clade clade
     
     
 -- get a list of terminal nodes from a tree
-terminals :: Tree.Tree -> [Tree.Clade]
-terminals (Tree.Tree root) = clade_terminals root
-clade_terminals :: Tree.Clade -> [Tree.Clade]
-clade_terminals clade = case Tree.children clade of
+terminals :: Tree -> [Clade]
+terminals (Tree root) = clade_terminals root
+clade_terminals :: Clade -> [Clade]
+clade_terminals clade = case children clade of
                           [] -> [clade]
                           otherwise -> [child | direct_child <- otherwise, 
                                                 child <- clade_terminals (direct_child)]
 -- find all nodes with a given label
-find_nodes :: Tree.Tree -> B.ByteString -> [Tree.Clade]
-find_nodes (Tree.Tree root) string = clade_find_nodes root string
-clade_find_nodes :: Tree.Clade -> B.ByteString -> [Tree.Clade]
-clade_find_nodes clade string = if Tree.name clade == string
+find_nodes :: Tree -> B.ByteString -> [Clade]
+find_nodes (Tree root) string = clade_find_nodes root string
+clade_find_nodes :: Clade -> B.ByteString -> [Clade]
+clade_find_nodes clade string = if name clade == string
                                 then clade : result
                                 else result
-                                where result = [result | child <- Tree.children clade, result <- clade_find_nodes child string]
+                                where result = [result | child <- children clade, result <- clade_find_nodes child string]
 
 {-
 -- get the path to the root for a clade in a tree
