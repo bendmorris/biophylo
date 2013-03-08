@@ -15,7 +15,8 @@ Library
   Build-depends:    base >= 2 && < 5, 
                     biocore,
                     bytestring,
-                    regex-tdfa
+                    parsec
+                    regex-tdfa,
   Exposed-modules:  Bio.Phylo
 
 source-Repository   master
