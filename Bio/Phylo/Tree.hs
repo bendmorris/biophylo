@@ -13,4 +13,9 @@ data Clade = Clade {
                     }
     deriving (Eq)
 
-newClade = Clade { name = B.empty, branch_length = 1, comment = B.empty, children = [] }
+emptyClade = Clade { 
+    name = B.empty, 
+    branch_length = 1, 
+    comment = B.empty, 
+    children = [] 
+}
