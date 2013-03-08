@@ -3,7 +3,7 @@ module Bio.Phylo where
 import qualified Data.ByteString.Lazy.Char8 as B
 import Bio.Phylo.Tree
 import qualified Bio.Phylo.IO.Newick as Newick
---import qualified Bio.Phylo.IO.Nexus as Nexus
+import qualified Bio.Phylo.IO.Nexus as Nexus
 
 
 parse :: String -> (B.ByteString -> Tree)
@@ -12,7 +12,7 @@ parse "newick" = Newick.parse
 
 write :: String -> (Tree -> B.ByteString)
 write "newick" = Newick.write
---write "nexus" = Nexus.write
+write "nexus" = Nexus.write
 
 parse_file :: String -> String -> IO Tree
 parse_file format filename =
